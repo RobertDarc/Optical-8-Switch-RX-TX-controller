@@ -1,7 +1,7 @@
 /*Laatste goede werking hoogste waarde uit Array                         *
  * Voor Arduino micro or leonardo and analog sensor PT19                 *
- * 29-11-2020 range aangepast van -30 30 naar -5 5 deze werkt nu goed.   *
- * Robert D'Arcangelo     V5 gemaakt met select case                                                *
+ * 5-12-2020 zoekt de laagste waarde uit de array werkt nu goed.            *
+ * Robert D'Arcangelo     V5 gemaakt met select case                     *                           *
  *************************************************************************
   Connection:
 
@@ -21,9 +21,6 @@
 int READings[8];
 int READindex=0;
 int index = 0 ; 
-
-
-
 
 
  
@@ -76,8 +73,6 @@ char CH8=56;
 
 
 
-
-
 long luxC=0;
 long luXx=0;
 long lux=0;
@@ -117,13 +112,17 @@ int test1=0;
 
 int selector=0;
 
-int sensorPin = A0;    //light sensor inputpin  leonardo
+int sensorPin = A0;    //light sensor inputpin  leonardo== A0    A11==Arduino micro
 int max_v = INT_MIN;
 int max_i = 0;
 
 
 int max_min = INT_MAX;
 int maxx_i = 0;
+
+
+int indeex = 0 ;  
+int count = sizeof(READings) / sizeof(READings[0]);
 
 
 //----------------------------------------------------------------------------------
@@ -154,40 +153,24 @@ luxMem8=MEM8*4;
 
 
 CH1= EEPROM.read(MEM9addr);
-
 CH2= EEPROM.read(MEM10addr);
-
 CH3= EEPROM.read(MEM11addr);
-
 CH4= EEPROM.read(MEM12addr);
-
 CH5= EEPROM.read(MEM13addr);
-
 CH6= EEPROM.read(MEM14addr);
-
 CH7= EEPROM.read(MEM15addr);
-
 CH8= EEPROM.read(MEM16addr);
 
-
-
-
-
-     
+   
 
 pinMode(Trigger, OUTPUT);
-
-
         
 
  for (int thisReading = 0; thisReading < numReadings; thisReading++) {
     readings[thisReading] = 0;
   }
  
-
 }
-
-
 
 
 //----------------Begin main loop---------------------------------------------------------------------------------------
@@ -321,25 +304,18 @@ void loop() {
                      Keybord=false;  
                      Testmode=true;                           
                     return;
-                 }
-                 
-                 
+                 }                             
         }
-
  
 //---------------------------channel filter----------------------------------------------
 
-
-//int luxR = analogRead(sensorPin); 
-  //readings[0,1,2,3,4,5,6,7]=0;
-
-    // subtract the last reading:
-    // total = total - readings[readIndex];
+      // subtract the last reading:
+     // total = total - readings[readIndex];
     // read from the sensor:
   readings[readIndex] =  analogRead(sensorPin);     // lightMeter.readLightLevel();   //analogRead(sensorPin);
-   // add the reading to the total:
-  //  total = total + readings[readIndex];
-  // advance to the next position in the array:
+     // add the reading to the total:
+    //  total = total + readings[readIndex];
+   // advance to the next position in the array:
   readIndex = readIndex + 1;
   delay(1);
 
@@ -370,24 +346,15 @@ void loop() {
    }
 
   // calculate the average:
- //  average = total / numReadings;
+  //  average = total / numReadings;
   // send it to the computer as ASCII digits
- // Serial.println(average);
-
-    //   lux=average;    //gemiddelde uit array     
+  // Serial.println(average);
+  //   lux=average;    //gemiddelde uit array     
 
 
 
 
  //----------------------------------------------------------------------------------------------
-
-
-//max_v = readings[readIndex];  // just to start it off
-//for (byte n = 0; n < 7; n++) {
-  // if (readings[n] > max_v) {
-      //  max_v = readings[n];
-  // }
-//}
 
 
  for ( int i = 0; i < sizeof(readings)/sizeof(readings[0]); i++ )
@@ -409,36 +376,19 @@ void loop() {
 //----------------------array2-----------------------------------------------------------------------
 
 
-READings[0]=luxMem1-lux;
-READings[1]=luxMem2-lux;
-READings[2]=luxMem3-lux;
-READings[3]=luxMem4-lux;
-READings[4]=luxMem5-lux;
-READings[5]=luxMem6-lux;
-READings[6]=luxMem7-lux;
-READings[7]=luxMem8-lux;
 
-
-             
-
-// for ( int u = 0; u < sizeof(READings)/sizeof(READings[0]); u++ )
- // {
-    //if ( READings[u] > max_min )       // get highest value from array
-   // delay(2);
-   // {
-   //   max_min = READings[u];
-    //  max_i = i;
-      
-  // }
-   
- //}
-
-//Serial.println(max_min);
+READings[0]=abs(luxMem1-lux);    //fill the array with the sum of luxmem1 - lux
+READings[1]=abs(luxMem2-lux);
+READings[2]=abs(luxMem3-lux);
+READings[3]=abs(luxMem4-lux);
+READings[4]=abs(luxMem5-lux);
+READings[5]=abs(luxMem6-lux);
+READings[6]=abs(luxMem7-lux);
+READings[7]=abs(luxMem8-lux);
+          
 
             
 //-------------------------------------------------------------------
-
-
 
   
    if (lux <1){
@@ -446,31 +396,43 @@ READings[7]=luxMem8-lux;
            Keyboard.releaseAll();  
            lux=0;
            max_v=0;   
-  }
-   if (lux >0){
+       }
+    if (lux >0){
          Y=true;       //indrukken
       //  Serial.println(lux);
       
-  } 
-   if (TTeller==1 && Y==false){  //loslaten knop 
+        } 
+    if (TTeller==1 && Y==false){  //loslaten knop 
        TTeller=0;     
-  }
+        }
 
-if (Y==true){ 
 
-               for (byte i = 0; i < 8; i = i+1) {
-                       // Serial.println(READings[i]);   
-                      //   delay(2);
-                   if (READings[i] > -15 && READings[i] < 15){
-                  //   if (READings[i] >= -15 && READings[i] <= 15 ){
-                       delay(2);
+  if (Y==true){ 
+           
+
+                  for (int H = 0; H < count; H++)   {      //find the lowest values from the array REAdings 0 to 8
+                      //  Serial.println(READings[H]); 
+                          delay(2);
+                      if (READings[H] < READings[indeex]) {
+                          indeex = H;
+                          selector = H;                   // the index to select the button ho is pressed
+                          }
+                       
+                        }
+                         
+                       //  for (byte i = 0; i < 8; i = i+1) {
+                       //   Serial.println(READings[i]);   
+                       //   delay(2);
+                       // if (READings[i] > -15 && READings[i] < 15){
+                       //   if (READings[i] >= -15 && READings[i] <= 15 ){
+                       //  delay(2);
                        //  Serial.println(i);                      
-                     selector = i;                                                             
+                       // selector = i;                                                             
 
    switch (selector) {
        case 0:
                if (Keybord==true){
-                  Keyboard.press(CH1);     
+                  Keyboard.press(CH1);               //button 1
                   }   
               if (Serieel==true){
                  Serial.println(CH1);
@@ -486,7 +448,7 @@ if (Y==true){
                  break;
         case 1:
              if (Keybord==true){
-                 Keyboard.press(CH2);   
+                 Keyboard.press(CH2);              //button 2
                  }
              if (Serieel==true){
                  Serial.println(CH2);
@@ -502,7 +464,7 @@ if (Y==true){
                  break;
         case 2:
               if (Keybord==true){
-                  Keyboard.press(CH3);    
+                  Keyboard.press(CH3);              //button 3
                   }
               if (Serieel==true){
                   Serial.println(CH3);
@@ -518,7 +480,7 @@ if (Y==true){
                  break;
         case 3:            
              if (Keybord==true){
-                  Keyboard.press(CH4);    
+                  Keyboard.press(CH4);              //button 4
                  }
              if (Serieel==true){
                   Serial.println(CH4);
@@ -534,7 +496,7 @@ if (Y==true){
                  break;
         case 4: 
              if (Keybord==true){
-                 Keyboard.press(CH5);     
+                 Keyboard.press(CH5);                //button 5
                  }
              if (Serieel==true){
                  Serial.println(CH5);
@@ -550,7 +512,7 @@ if (Y==true){
                  break;
         case 5:
               if (Keybord==true){
-                 Keyboard.press(CH6);     
+                 Keyboard.press(CH6);               //button 6
                  }
               if (Serieel==true){
                  Serial.println(CH6);
@@ -566,7 +528,7 @@ if (Y==true){
                   break;
         case 6: 
               if (Keybord==true){
-                  Keyboard.press(CH7);     
+                  Keyboard.press(CH7);              //button 7
                   }
               if (Serieel==true){
                   Serial.println(CH7);
@@ -582,7 +544,7 @@ if (Y==true){
                   break;
        case 7:
               if (Keybord==true){
-                  Keyboard.press(CH8);     
+                  Keyboard.press(CH8);                //button 8
                   }
               if (Serieel==true){
                   Serial.println(CH8);
@@ -599,214 +561,10 @@ if (Y==true){
       default:
                // statements
                   break;
-                  }    
-      
-         
-         }
-          // Serial.println(max_min); 
-           }
+                  }                                      
 
      }
-      
-//  Serial.println(lux);
-
-
-//--------------------------------------------------------------------------------------------------------
- 
-/*
- if ((luxMem1 - lux  > -10) && (luxMem1 - lux < 10) && TTeller==0)
-        { 
-          //  test1 = lux-luxMem1;                   
-             luxMem1=lux;                 //button1
-                     
-       if (Keybord==true){
-           Keyboard.press(CH1);     
-         }   
-       if (Serieel==true){
-           Serial.println(CH1);
-       } 
-       if (Testmode==true){
-            Serial.print(CH1);
-            Serial.print(" ");
-            Serial.print(lux);
-            Serial.print(" ");
-            Serial.println(lux-luxMem1);  
-         }     
-        lux=0;
-        max_v=0; 
-        TTeller=0;   
-      
 }
-
-if ((luxMem2 - lux > -10) && (luxMem2 - lux <10)&& TTeller==0)
-       {  
-          //  test2 = lux-luxMem2;                            
-            luxMem2=lux;                       //button2 
-                 
-       if (Keybord==true){
-           Keyboard.press(CH2);     
-         }
-       if (Serieel==true){
-           Serial.println(CH2);
-        }
-       if (Testmode==true){
-            Serial.print(CH2);
-            Serial.print(" ");
-            Serial.print(lux);
-            Serial.print(" ");
-            Serial.println(lux-luxMem2); 
-         }      
-           lux=0;
-           max_v=0;
-           TTeller=0;
-}
- 
-if ((luxMem3 - lux -test3 > -10) && (luxMem3 - lux-test3 < 10)&& TTeller==0)
-         {
-             test3 = lux-luxMem3;               
-             luxMem3=lux;                        //button3 
-              
-       if (Keybord==true){
-           Keyboard.press(CH3);     
-         }
-       if (Serieel==true){
-           Serial.println(CH3);
-         }
-       if (Testmode==true){
-            Serial.print(CH3);
-            Serial.print(" ");
-            Serial.print(lux);
-            Serial.print(" ");
-            Serial.println(lux-luxMem3);
-         }      
-          lux=0;
-          max_v=0;       
-          TTeller=0;
- }
-
- 
-if ((luxMem4 - lux-test4 > -10) && (luxMem4 - lux-test4  < 10)&& TTeller==0)
-        { 
-            test4 = lux-luxMem4;             
-            luxMem4=lux;                         //button4
-            
-       if (Keybord==true){
-           Keyboard.press(CH4);     
-         }
-       if (Serieel==true){
-           Serial.println(CH4);
-         }
-       if (Testmode==true){
-            Serial.print(CH4);
-            Serial.print(" ");
-            Serial.print(lux);
-            Serial.print(" ");
-            Serial.println(lux-luxMem4);
-         }      
-          lux=0;
-          max_v=0;
-          TTeller=0;
-}
-
- 
-if ((luxMem5 - lux-test5 > -10) && (luxMem5 - lux-test5 < 10)&& TTeller==0)
-       {
-           test5 = lux-luxMem5;             
-           luxMem5=lux;                         //button5
-           
-       if (Keybord==true){
-           Keyboard.press(CH5);     
-         }
-       if (Serieel==true){
-           Serial.println(CH5);
-         }
-       if (Testmode==true){
-            Serial.print(CH5);
-            Serial.print(" ");
-            Serial.print(lux);
-            Serial.print(" ");
-            Serial.println(lux-luxMem5);
-         }      
-         lux=0;
-         max_v=0;
-         TTeller=0;
-}
-
-if ((luxMem6 - lux-test6 > -10) && (luxMem6 - lux-test6  < 10)&& TTeller==0)
-       {
-            test6 = lux-luxMem6;       
-            luxMem6=lux;                        //button6
-            
-      if (Keybord==true){
-           Keyboard.press(CH6);     
-         }
-       if (Serieel==true){
-           Serial.println(CH6);
-         }
-       if (Testmode==true){
-            Serial.print(CH6);
-            Serial.print(" ");
-            Serial.print(lux);
-            Serial.print(" ");
-            Serial.println(lux-luxMem6);
-         }      
-         lux=0;
-         max_v=0;
-         TTeller=0;
-}
-
- if ((luxMem7 - lux-test7  > -10) && (luxMem7 - lux-test7 < 10)&& TTeller==0)
-       {
-           test7 = lux-luxMem7;                  
-           luxMem7=lux;                         //button7
-           
-      if (Keybord==true){
-           Keyboard.press(CH7);     
-         }
-       if (Serieel==true){
-           Serial.println(CH7);
-         }
-       if (Testmode==true){
-            Serial.print(CH7);
-            Serial.print(" ");
-            Serial.print(lux);
-            Serial.print(" ");
-            Serial.println(lux-luxMem7);
-         }      
-          lux=0;
-          max_v=0;
-          TTeller=0;
-}
-
- if ((luxMem8 - lux-test8 > -10) && (luxMem8 - lux-test8  < 10)&& TTeller==0)
-       { 
-            test8 = lux-luxMem8;
-            luxMem8=lux;                        //button8
-       
-       if (Keybord==true){
-           Keyboard.press(CH8);     
-         }
-       if (Serieel==true){
-           Serial.println(CH8);
-         }
-       if (Testmode==true){
-           Serial.print(CH8);
-           Serial.print(" ");
-           Serial.print(lux);
-           Serial.print(" ");
-           Serial.println(lux-luxMem8);
-         }      
-            lux=0;
-            max_v=0;
-            TTeller=0;
-      }
-
-
-//digitalWrite(Trigger, LOW);    //Trigger pin 2 low
-//delay(100);
-*/
-}
-
 //----------------------end main loop------------------------------------------------------------------------
 
 
