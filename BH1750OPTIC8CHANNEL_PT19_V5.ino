@@ -1,6 +1,6 @@
 /*Laatste goede werking hoogste waarde uit Array                         *
  * Voor Arduino micro or leonardo and analog sensor PT19                 *
- * 5-12-2020 zoekt de laagste waarde uit de array werkt nu goed.            *
+ * 9-12-2020 zoekt de laagste waarde uit de array werkt nu goed.            *
  * Robert D'Arcangelo     V5 gemaakt met select case                     *                           *
  *************************************************************************
   Connection:
@@ -24,7 +24,7 @@ int index = 0 ;
 
 
  
-const int numReadings = 5;      // array  for data annalog
+const int numReadings = 3;      // array  for data annalog
 int readings[numReadings];      // the readings from the analog input
 int readIndex = 0;              // the index of the current reading
 int total = 0;                  // the running total
@@ -190,7 +190,7 @@ void loop() {
            if (incomingByte == 105){   // asci I voor info vb2010 tool
                    Serial.write(12);                                     //clear the screen for Putty      
                    Serial.println("           *****************************************");
-                   Serial.println("           ** Optical input controller versie 1.5  **");
+                   Serial.println("           ** Optical input controller versie 1.6  **");
                    Serial.println("           **   (c) Nov 2020 R D'Arcangelo.       **"); 
                    Serial.println("           **  8 channel optical input switches.  **"); 
                    Serial.println("           **      Company: Radboud/Donders.  **");
@@ -203,7 +203,7 @@ void loop() {
             if (incomingByte == 104) {   //ascii h    toon dit helpmenu
                    Serial.write(12);                                     //clear the screen for Putty      
                    Serial.println("*****************************************");
-                   Serial.println("** Optical input controller versie 1.5 **");
+                   Serial.println("** Optical input controller versie 1.6 **");
                    Serial.println("**   (c) Nov 2020 R D'Arcangelo.       **"); 
                    Serial.println("**  8 channel optical input switches.  **"); 
                    Serial.println("**      Company: Radboud/Donders.      **");
@@ -308,16 +308,29 @@ void loop() {
         }
  
 //---------------------------channel filter----------------------------------------------
+    lux =  analogRead(sensorPin); 
+   // delay(1);
+   
+        if (lux > 20){                       
+             while (readIndex < numReadings){
+                    readings[readIndex] = analogRead(sensorPin);            // fill array with 3 values only 
+                    readIndex = readIndex + 1;
+               }
+             if (readings[0]+readings[1]+readings[2] > 0) {                  //to filter of zero values
+                   max_v= readings[0]+readings[1]+readings[2];
+               }
+           }
 
-      // subtract the last reading:
-     // total = total - readings[readIndex];
-    // read from the sensor:
-  readings[readIndex] =  analogRead(sensorPin);     // lightMeter.readLightLevel();   //analogRead(sensorPin);
+
+         // subtract the last reading:
+        // total = total - readings[readIndex];
+       // read from the sensor:
+      //  readings[readIndex] =  analogRead(sensorPin);     // lightMeter.readLightLevel();   //analogRead(sensorPin);
      // add the reading to the total:
     //  total = total + readings[readIndex];
    // advance to the next position in the array:
-  readIndex = readIndex + 1;
-  delay(1);
+  //  readIndex = readIndex + 1;
+//  delay(1);
 
 
  // Serial.print(readings[0]);
@@ -330,7 +343,7 @@ void loop() {
  // Serial.print(" ");
  // Serial.print(readings[4]);
  // Serial.print(" ");
-  //Serial.print(readings[5]);
+ //Serial.print(readings[5]);
  // Serial.print(" ");
  // Serial.print(readings[6]);
  // Serial.print(" ");
@@ -339,17 +352,17 @@ void loop() {
  //*/
   
  
-  // if we're at the end of the array...
-  if (readIndex >= numReadings) {
-    // ...wrap around to the beginning:  
-     readIndex = 0;  
-   }
+     // if we're at the end of the array...
+    // if (readIndex >= numReadings) {
+   // ...wrap around to the beginning:  
+  //   readIndex = 0;  
+ // }
 
-  // calculate the average:
-  //  average = total / numReadings;
+    // calculate the average:
+   // average = total / numReadings;
   // send it to the computer as ASCII digits
-  // Serial.println(average);
-  //   lux=average;    //gemiddelde uit array     
+ //  Serial.println(average);
+//   lux=average;    //gemiddelde uit array     
 
 
 
@@ -357,67 +370,74 @@ void loop() {
  //----------------------------------------------------------------------------------------------
 
 
- for ( int i = 0; i < sizeof(readings)/sizeof(readings[0]); i++ )
-  {
-    if ( readings[i] > max_v )       // get highest value from array
-    delay(2);
-    {
-      max_v = readings[i];
+// for ( int i = 0; i < sizeof(readings)/sizeof(readings[0]); i++ )
+ // {
+  //  if ( readings[i] > max_v )       // get highest value from array
+ //   delay(2);
+  //  {
+  //    max_v = readings[i];
     //  max_i = i;
       
-   }
- }
+  // }
+// }
  
-//---------------------------------------------------------------------
+//--------------------------------------------------------------------------------------------------
        
-          lux=max_v;   //hoogste waarde uit array
-
+        //  lux=max_v;   //hoogste waarde uit array
+          
  
 //----------------------array2-----------------------------------------------------------------------
 
 
-
-READings[0]=abs(luxMem1-lux);    //fill the array with the sum of luxmem1 - lux
-READings[1]=abs(luxMem2-lux);
-READings[2]=abs(luxMem3-lux);
-READings[3]=abs(luxMem4-lux);
-READings[4]=abs(luxMem5-lux);
-READings[5]=abs(luxMem6-lux);
-READings[6]=abs(luxMem7-lux);
-READings[7]=abs(luxMem8-lux);
+READings[0]=abs(luxMem1*3-max_v);    //fill the array with the sum of luxmem1*3 - max_v
+READings[1]=abs(luxMem2*3-max_v);
+READings[2]=abs(luxMem3*3-max_v);
+READings[3]=abs(luxMem4*3-max_v);
+READings[4]=abs(luxMem5*3-max_v);
+READings[5]=abs(luxMem6*3-max_v);
+READings[6]=abs(luxMem7*3-max_v);
+READings[7]=abs(luxMem8*3-max_v);
           
 
             
 //-------------------------------------------------------------------
 
   
-   if (lux <1){
-          Y=false;       //Loslaten
+   if (lux < 10){   //<1
+          Y=false;                    //Loslaten
            Keyboard.releaseAll();  
+           readIndex = 0; 
+           READings[0]=0;
+           READings[1]=0;
+           READings[2]=0;
+           READings[3]=0;
+           READings[4]=0;
+           READings[5]=0;
+           READings[6]=0;
+           READings[7]=0;       
            lux=0;
-           max_v=0;   
+           delay(1);
+         //max_v=0;   
        }
-    if (lux >0){
-         Y=true;       //indrukken
-      //  Serial.println(lux);
-      
+    if (lux > 20){  // >0   luxMem1/2
+         Y=true;                     //indrukken     
+            //   Serial.println(max_v);
         } 
+        
     if (TTeller==1 && Y==false){  //loslaten knop 
        TTeller=0;     
         }
 
 
-  if (Y==true){ 
-           
-
+  if (Y==true){        
+         
                   for (int H = 0; H < count; H++)   {      //find the lowest values from the array REAdings 0 to 8
-                      //  Serial.println(READings[H]); 
-                          delay(2);
+                         //Serial.println(READings[H]); 
+                        // delay(1);
                       if (READings[H] < READings[indeex]) {
-                          indeex = H;
-                          selector = H;                   // the index to select the button ho is pressed
-                          }
-                       
+                           indeex = H;
+                           selector = H;                   // the index to select the button how is pressed
+                          }                       
                         }
                          
                        //  for (byte i = 0; i < 8; i = i+1) {
@@ -432,7 +452,7 @@ READings[7]=abs(luxMem8-lux);
    switch (selector) {
        case 0:
                if (Keybord==true){
-                  Keyboard.press(CH1);               //button 1
+                  Keyboard.press(CH1);               //button 1 
                   }   
               if (Serieel==true){
                  Serial.println(CH1);
@@ -448,7 +468,7 @@ READings[7]=abs(luxMem8-lux);
                  break;
         case 1:
              if (Keybord==true){
-                 Keyboard.press(CH2);              //button 2
+                 Keyboard.press(CH2);              //button 2 
                  }
              if (Serieel==true){
                  Serial.println(CH2);
